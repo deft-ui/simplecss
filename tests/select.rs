@@ -47,6 +47,13 @@ impl Element for XmlNode<'_, '_> {
             _ => false,
         }
     }
+
+    fn has_class(&self, name: &str) -> bool {
+        match self.0.attribute("class") {
+            Some(class) => class.contains(name), //TODO handle whitespace
+            None => false,
+        }
+    }
 }
 
 macro_rules! match_single {

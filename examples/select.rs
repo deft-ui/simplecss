@@ -49,6 +49,13 @@ impl simplecss::Element for XmlNode<'_, '_> {
             _ => false, // Since we are querying a static XML we can ignore other pseudo-classes.
         }
     }
+
+    fn has_class(&self, name: &str) -> bool {
+        match self.0.attribute("class") {
+            Some(class) => class.contains(name), //TODO handle whitespace
+            None => false,
+        }
+    }
 }
 
 fn main() {

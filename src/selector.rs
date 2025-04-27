@@ -81,6 +81,9 @@ pub trait Element: Sized {
     /// Checks that the element has a specified local name.
     fn has_local_name(&self, name: &str) -> bool;
 
+    /// Checks that the element has s specified class.
+    fn has_class(&self, name: &str) -> bool;
+
     /// Checks that the element has a specified attribute.
     fn attribute_matches(&self, local_name: &str, operator: AttributeOperator<'_>) -> bool;
 
@@ -98,6 +101,7 @@ enum SimpleSelectorType<'a> {
 enum SubSelector<'a> {
     Attribute(&'a str, AttributeOperator<'a>),
     PseudoClass(PseudoClass<'a>),
+    Class(&'a str),
 }
 
 #[derive(Clone, Debug)]
@@ -233,6 +237,11 @@ fn match_selector<E: Element>(selector: &SimpleSelector<'_>, element: &E) -> boo
                     return false;
                 }
             }
+            SubSelector::Class(name) => {
+                if !element.has_class(name) {
+                    return false;
+                }
+            }
         }
     }
 
@@ -295,10 +304,7 @@ pub(crate) fn parse(text: &str) -> (Option<Selector<'_>>, usize) {
                 combinator = Combinator::None;
             }
             SelectorToken::ClassSelector(ident) => {
-                add_sub(SubSelector::Attribute(
-                    "class",
-                    AttributeOperator::Contains(ident),
-                ));
+                add_sub(SubSelector::Class(ident));
             }
             SelectorToken::IdSelector(id) => {
                 add_sub(SubSelector::Attribute("id", AttributeOperator::Matches(id)));
@@ -389,6 +395,7 @@ impl fmt::Display for Selector<'_> {
                         };
                     }
                     SubSelector::PseudoClass(class) => write!(f, ":{}", class)?,
+                    SubSelector::Class(class) => write!(f, ".{}", class)?,
                 }
             }
         }
