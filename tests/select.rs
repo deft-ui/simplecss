@@ -54,6 +54,10 @@ impl Element for XmlNode<'_, '_> {
             None => false,
         }
     }
+
+    fn pseudo_element_matches(&self, _local_name: &str) -> bool {
+        false
+    }
 }
 
 macro_rules! match_single {

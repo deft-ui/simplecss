@@ -89,6 +89,9 @@ pub trait Element: Sized {
 
     /// Checks that the element matches a specified pseudo-class.
     fn pseudo_class_matches(&self, class: PseudoClass<'_>) -> bool;
+
+    /// Checks that the element matches a specified pseudo-element.
+    fn pseudo_element_matches(&self, local_name: &str) -> bool;
 }
 
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -101,6 +104,7 @@ enum SimpleSelectorType<'a> {
 enum SubSelector<'a> {
     Attribute(&'a str, AttributeOperator<'a>),
     PseudoClass(PseudoClass<'a>),
+    PseudoElement(&'a str),
     Class(&'a str),
 }
 
@@ -247,6 +251,11 @@ fn match_selector<E: Element>(selector: &SimpleSelector<'_>, element: &E) -> boo
                     return false;
                 }
             }
+            SubSelector::PseudoElement(name) => {
+                if !element.pseudo_element_matches(*name) {
+                    return false;
+                }
+            }
         }
     }
 
@@ -336,6 +345,9 @@ pub(crate) fn parse(text: &str) -> (Option<Selector<'_>>, usize) {
 
                 add_sub(SubSelector::PseudoClass(class));
             }
+            SelectorToken::PseudoElement(ident) => {
+                add_sub(SubSelector::PseudoElement(ident))
+            }
             SelectorToken::LangPseudoClass(lang) => {
                 add_sub(SubSelector::PseudoClass(PseudoClass::Lang(lang)));
             }
@@ -402,6 +414,7 @@ impl fmt::Display for Selector<'_> {
                     }
                     SubSelector::PseudoClass(class) => write!(f, ":{}", class)?,
                     SubSelector::Class(class) => write!(f, ".{}", class)?,
+                    SubSelector::PseudoElement(pseudo_element) => write!(f, "::{}", pseudo_element)?,
                 }
             }
         }
@@ -430,6 +443,9 @@ pub enum SelectorToken<'a> {
 
     /// `:first-child`
     PseudoClass(&'a str),
+
+    /// `::before`
+    PseudoElement(&'a str),
 
     /// `:lang(en)`
     LangPseudoClass(&'a str),
@@ -559,9 +575,13 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
             b':' => {
                 self.after_combinator = false;
                 self.stream.advance(1);
+                let is_pseudo_element = Ok(b':') == self.stream.curr_byte();
+                if is_pseudo_element {
+                    self.stream.advance(1);
+                }
                 let ident = try2!(self.stream.consume_ident());
 
-                if ident == "lang" {
+                if ident == "lang" && !is_pseudo_element {
                     try2!(self.stream.consume_byte(b'('));
                     let lang = self.stream.consume_bytes(|c| c != b')').trim();
                     try2!(self.stream.consume_byte(b')'));
@@ -572,6 +592,8 @@ impl<'a> Iterator for SelectorTokenizer<'a> {
                     }
 
                     Some(Ok(SelectorToken::LangPseudoClass(lang)))
+                } else if is_pseudo_element {
+                    Some(Ok(SelectorToken::PseudoElement(ident)))
                 } else {
                     Some(Ok(SelectorToken::PseudoClass(ident)))
                 }

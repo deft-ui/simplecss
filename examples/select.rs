@@ -56,6 +56,10 @@ impl deft_simplecss::Element for XmlNode<'_, '_> {
             None => false,
         }
     }
+
+    fn pseudo_element_matches(&self, _local_name: &str) -> bool {
+        false
+    }
 }
 
 fn main() {
