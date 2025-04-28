@@ -3,7 +3,7 @@
 
 //! Specificity
 
-use simplecss::*;
+use deft_simplecss::*;
 
 #[test]
 fn spec_01() {

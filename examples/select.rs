@@ -7,7 +7,7 @@ struct XmlNode<'a, 'input: 'a>(roxmltree::Node<'a, 'input>);
 
 impl<'a, 'input: 'a> XmlNode<'a, 'input> {
     fn select(&self, text: &str) -> Option<roxmltree::Node<'a, 'input>> {
-        let selectors = simplecss::Selector::parse(text)?;
+        let selectors = deft_simplecss::Selector::parse(text)?;
         self.0
             .descendants()
             .filter(|n| n.is_element())
@@ -15,7 +15,7 @@ impl<'a, 'input: 'a> XmlNode<'a, 'input> {
     }
 }
 
-impl simplecss::Element for XmlNode<'_, '_> {
+impl deft_simplecss::Element for XmlNode<'_, '_> {
     fn parent_element(&self) -> Option<Self> {
         self.0.parent_element().map(XmlNode)
     }
@@ -35,7 +35,7 @@ impl simplecss::Element for XmlNode<'_, '_> {
     fn attribute_matches(
         &self,
         local_name: &str,
-        operator: simplecss::AttributeOperator<'_>,
+        operator: deft_simplecss::AttributeOperator<'_>,
     ) -> bool {
         match self.0.attribute(local_name) {
             Some(value) => operator.matches(value),
@@ -43,9 +43,9 @@ impl simplecss::Element for XmlNode<'_, '_> {
         }
     }
 
-    fn pseudo_class_matches(&self, class: simplecss::PseudoClass<'_>) -> bool {
+    fn pseudo_class_matches(&self, class: deft_simplecss::PseudoClass<'_>) -> bool {
         match class {
-            simplecss::PseudoClass::FirstChild => self.prev_sibling_element().is_none(),
+            deft_simplecss::PseudoClass::FirstChild => self.prev_sibling_element().is_none(),
             _ => false, // Since we are querying a static XML we can ignore other pseudo-classes.
         }
     }

@@ -3,7 +3,7 @@
 
 //! Selector Tokenizer
 
-use simplecss::*;
+use deft_simplecss::*;
 
 macro_rules! tokenize {
     ($name:ident, $text:expr, $( $token:expr ),*) => (

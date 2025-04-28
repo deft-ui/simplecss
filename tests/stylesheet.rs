@@ -3,7 +3,7 @@
 
 //! Stylesheet
 
-use simplecss::*;
+use deft_simplecss::*;
 
 #[test]
 fn style_01() {

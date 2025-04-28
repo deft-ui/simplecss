@@ -128,6 +128,7 @@ struct Component<'a> {
 /// A selector.
 #[derive(Clone, Debug)]
 pub struct Selector<'a> {
+    source: &'a str,
     components: Vec<Component<'a>>,
 }
 
@@ -161,6 +162,10 @@ impl<'a> Selector<'a> {
         }
 
         spec
+    }
+
+    pub fn source(&self) -> &'a str {
+        self.source
     }
 
     /// Checks that the provided element matches the current selector.
@@ -357,7 +362,8 @@ pub(crate) fn parse(text: &str) -> (Option<Selector<'_>>, usize) {
 
         (None, tokenizer.stream.pos())
     } else {
-        (Some(Selector { components }), tokenizer.stream.pos())
+        let source = &text[0..tokenizer.stream.pos()];
+        (Some(Selector { source, components }), tokenizer.stream.pos())
     }
 }
 

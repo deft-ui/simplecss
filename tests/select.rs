@@ -3,7 +3,7 @@
 
 //! Select
 
-use simplecss::*;
+use deft_simplecss::*;
 
 struct XmlNode<'a, 'input: 'a>(roxmltree::Node<'a, 'input>);
 
