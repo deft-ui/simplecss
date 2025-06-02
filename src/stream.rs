@@ -190,6 +190,9 @@ impl<'a> Stream<'a> {
 
         if self.curr_byte() == Ok(b'-') {
             self.advance(1);
+            if self.curr_byte() == Ok(b'-') {
+                self.advance(1);
+            }
         }
 
         let mut iter = self.chars();
